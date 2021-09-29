@@ -2,7 +2,7 @@ plugins {
     id 'com.android.application'
     id 'kotlin-android'
 }
-
+apply plugin: 'kotlin-kapt'
 android {
     compileSdk 31
 
@@ -43,6 +43,10 @@ dependencies {
     implementation "com.google.android.gms:play-services-location:$location_services_version"
     implementation 'com.google.android.libraries.places:places:2.4.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
+    implementation "androidx.activity:activity-ktx:1.1.0"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
+    implementation "androidx.room:room-runtime:$room_version"
+    kapt "androidx.room:room-compiler:$room_version"
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'

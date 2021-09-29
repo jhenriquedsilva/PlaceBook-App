@@ -4,6 +4,8 @@ buildscript {
         kotlin_version = '1.4.30'
         maps_services_version = '17.0.0'
         location_services_version = '18.0.0'
+        lifecycle_version = '2.2.0'
+        room_version = '2.2.6'
     }
     repositories {
         google()
