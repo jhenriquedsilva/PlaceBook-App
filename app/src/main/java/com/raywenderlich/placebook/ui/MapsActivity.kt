@@ -6,6 +6,7 @@ import android.graphics.Bitmap
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import androidx.activity.viewModels
 import androidx.core.app.ActivityCompat
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.location.*
@@ -23,6 +24,9 @@ import com.google.android.libraries.places.api.net.PlacesClient
 import com.raywenderlich.placebook.R
 import com.raywenderlich.placebook.adapter.BookmarkInfoWindowAdapter
 import com.raywenderlich.placebook.databinding.ActivityMapsBinding
+import com.raywenderlich.placebook.viewmodel.MapsViewModel
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -30,6 +34,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var placesClient: PlacesClient
     private lateinit var binding: ActivityMapsBinding
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+    // This creates a new mapsViewModel only the first time the activity is created
+    private val mapsViewModel by viewModels<MapsViewModel>()
     // private var locationRequest: LocationRequest? = null
 
     //1
@@ -72,12 +78,24 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onMapReady(googleMap: GoogleMap) {
         // The GoogleMap object is used to control and query the map
         map = googleMap
+        setupMapListeners()
+        getCurrentLocationAndCentersOnIt()
+
+    }
+
+    private fun setupMapListeners() {
         // Indicate that the map should use the custom InfoWindow class
         map.setInfoWindowAdapter(BookmarkInfoWindowAdapter(this))
-        getCurrentLocationAndCentersOnIt()
-        map.setOnPoiClickListener { pointOfInterest ->
-            displayPoi(pointOfInterest)
+        map.setOnPoiClickListener { pointOfInterest -> displayPoi(pointOfInterest) }
+        map.setOnInfoWindowClickListener { marker -> handleInfoWindowClick(marker)}
+    }
+
+    private fun handleInfoWindowClick(marker: Marker) {
+        val placeInfo = marker.tag as PlaceInfo
+        GlobalScope.launch {
+            mapsViewModel.addBookmarkFromPlace(placeInfo.place, placeInfo.image)
         }
+        marker.remove()
     }
 
     //3 When the app launches, get the current location and centers the map on it
@@ -204,6 +222,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
     }
 
+    // Add a marker when a point of interest is tapped
     private fun displayPoiDisplayStep(place: Place, photo: Bitmap?) {
 
         val marker = map.addMarker(
@@ -213,11 +232,15 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             .snippet(place.phoneNumber)
         )
 
-        marker?.tag = photo
+        marker?.tag = PlaceInfo(place, photo)
     }
 
     companion object {
         private const val REQUEST_LOCATION = 1
         private const val TAG = "MapsActivity"
     }
+
+    // This class is used to store data in the marker tag
+    // I modified that because the place will not be null
+    class PlaceInfo(val place: Place, val image: Bitmap? = null)
 }
