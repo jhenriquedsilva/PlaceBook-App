@@ -7,10 +7,12 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.Marker
 import com.raywenderlich.placebook.databinding.ContentBookmarkInfoBinding
 import com.raywenderlich.placebook.ui.MapsActivity
+import com.raywenderlich.placebook.viewmodel.MapsViewModel
 
 // Once this object is assigned, the map will call getInfoWindow() whenever it needs to display
 // an info window for a particular marker
-class BookmarkInfoWindowAdapter(context: Activity) : GoogleMap.InfoWindowAdapter {
+class BookmarkInfoWindowAdapter(val context: Activity) : GoogleMap.InfoWindowAdapter {
+
     private val binding = ContentBookmarkInfoBinding.inflate(context.layoutInflater)
 
     override fun getInfoWindow(marker: Marker): View? {
@@ -20,11 +22,24 @@ class BookmarkInfoWindowAdapter(context: Activity) : GoogleMap.InfoWindowAdapter
     }
 
     override fun getInfoContents(marker: Marker): View? {
-        binding.title.text = marker.title ?: "Information not available"
-        binding.phone.text = marker.snippet ?: "Information not available"
-        // A bug occurs when there is no image
-        val placeInfo = marker.tag as MapsActivity.PlaceInfo
-        binding.photo.setImageBitmap(placeInfo.image)
+        binding.title.text = marker.title ?: ""
+        binding.phone.text = marker.snippet ?: ""
+
+        when (marker.tag) {
+
+            // There are two typed of tags
+            is MapsActivity.PlaceInfo -> {
+                // A bug occurs when there is no image
+                val placeInfo = marker.tag as MapsActivity.PlaceInfo
+                binding.photo.setImageBitmap(placeInfo.image)
+            }
+
+            is MapsViewModel.BookmarkMarkerView -> {
+                // A bug occurs when there is no image
+                val bookmarkMarkView = marker.tag as MapsViewModel.BookmarkMarkerView
+                binding.photo.setImageBitmap(bookmarkMarkView.getImage(context))
+            }
+        }
         return binding.root
     }
 }

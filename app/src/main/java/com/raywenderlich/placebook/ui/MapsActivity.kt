@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.viewModels
 import androidx.core.app.ActivityCompat
+import androidx.lifecycle.Observer
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.location.*
 
@@ -79,6 +80,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         // The GoogleMap object is used to control and query the map
         map = googleMap
         setupMapListeners()
+        createBookmarkObserver()
         getCurrentLocationAndCentersOnIt()
 
     }
@@ -96,6 +98,37 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             mapsViewModel.addBookmarkFromPlace(placeInfo.place, placeInfo.image)
         }
         marker.remove()
+    }
+
+    // Observes changes in the database
+    private fun createBookmarkObserver() {
+        // Everytime the data changes in the database, this lambda is called
+        val bookmarksObserver = Observer<List<MapsViewModel.BookmarkMarkerView>> { bookmarks ->
+                map.clear()
+                bookmarks?.let { bookmarks ->
+                    displayAllBookmarks(bookmarks)
+                }
+        }
+        mapsViewModel.getBookmarkMarkerViews()?.observe(this, bookmarksObserver)
+    }
+
+    // Adds blue markers for bookmarks
+    private fun displayAllBookmarks(bookmarks: List<MapsViewModel.BookmarkMarkerView>) {
+        bookmarks.forEach { bookmark -> addPlaceMarker(bookmark) }
+    }
+
+    // Creates the blue marker
+    private fun addPlaceMarker(bookmark: MapsViewModel.BookmarkMarkerView): Marker? {
+        val marker = map.addMarker(
+                 MarkerOptions()
+                .position(bookmark.location)
+                .title(bookmark.name)
+                .snippet(bookmark.phone)
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
+                .alpha(0.8f)
+        )
+        marker.tag = bookmark
+        return marker
     }
 
     //3 When the app launches, get the current location and centers the map on it
@@ -233,6 +266,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         )
 
         marker?.tag = PlaceInfo(place, photo)
+        // If the marker is tapped, show the info window immediately
+        marker?.showInfoWindow()
     }
 
     companion object {
