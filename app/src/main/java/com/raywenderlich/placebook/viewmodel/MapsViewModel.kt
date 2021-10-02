@@ -30,6 +30,8 @@ class MapsViewModel(application: Application): AndroidViewModel(application) {
         bookmark.address = place.address.toString()
 
         val newId = repository.addBookmark(bookmark)
+
+        // Stores the image in the Android filesystem
         image?.let { image -> bookmark.setImage(image, getApplication()) }
 
         Log.i(TAG, "New bookmark $newId added to the database.")
@@ -41,7 +43,8 @@ class MapsViewModel(application: Application): AndroidViewModel(application) {
         var location: LatLng = LatLng(0.0,0.0),
         var name: String = "",
         var phone: String = ""
-    ) {
+    )
+    {
         fun getImage(context: Context): Bitmap? {
             return id?.let { id ->
                 ImageUtils.loadBitmapFromFile(context, Bookmark.generateImageFilename(id))
