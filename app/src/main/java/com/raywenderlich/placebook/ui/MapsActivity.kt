@@ -116,6 +116,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun startBookmarkDetails(bookmarkId: Long) {
         val intent = Intent(this, BookmarkDetailsActivity::class.java)
+        intent.putExtra(EXTRA_BOOKMARK_ID, bookmarkId)
         startActivity(intent)
     }
 
@@ -292,6 +293,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     companion object {
         private const val REQUEST_LOCATION = 1
         private const val TAG = "MapsActivity"
+        const val  EXTRA_BOOKMARK_ID = "com.raywenderlich.placebook.EXTRA_BOOKMARK_ID"
     }
 
     // This class is used to store data in the marker tag

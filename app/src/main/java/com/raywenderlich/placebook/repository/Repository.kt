@@ -10,6 +10,11 @@ class Repository(context: Context) {
 
     private val db = PlaceBookDatabase.getInstance(context)
     private val bookmarkDao: BookmarkDao = db.bookmarkDao()
+    // Gets all the bookmark from the repository
+    val allBookmarks: LiveData<List<Bookmark>>
+        get() {
+            return bookmarkDao.loadAll()
+        }
 
     // The return may be null as the bookmark could not be saved
     fun addBookmark(bookmark: Bookmark): Long? {
@@ -22,10 +27,8 @@ class Repository(context: Context) {
         return Bookmark()
     }
 
-    // Gets all the bookmark from the repository
-    val allBookmarks: LiveData<List<Bookmark>>
-        get() {
-            return bookmarkDao.loadAll()
-        }
+    fun getLiveBookmark(bookmarkId: Long): LiveData<Bookmark> {
+        return bookmarkDao.loadLiveBookmark(bookmarkId)
+    }
 
 }
