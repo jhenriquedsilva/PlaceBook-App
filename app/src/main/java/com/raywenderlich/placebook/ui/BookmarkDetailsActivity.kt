@@ -2,10 +2,14 @@ package com.raywenderlich.placebook.ui
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import androidx.activity.viewModels
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.Observer
 import com.raywenderlich.placebook.R
 import com.raywenderlich.placebook.databinding.ActivityBookmarkDetailsBinding
+import com.raywenderlich.placebook.model.Bookmark
 import com.raywenderlich.placebook.viewmodel.BookmarkDetailsViewModel
 
 class BookmarkDetailsActivity : AppCompatActivity() {
@@ -18,10 +22,25 @@ class BookmarkDetailsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         databinding = DataBindingUtil.setContentView(this, R.layout.activity_bookmark_details)
         setupToolbar()
+        getIntentData()
     }
 
     private fun setupToolbar() {
         setSupportActionBar(databinding.toolbar)
+    }
+
+    private fun getIntentData() {
+
+        val bookmarkId = intent.getLongExtra(MapsActivity.EXTRA_BOOKMARK_ID, 0)
+
+        bookmarkDetailsViewModel.getBookmark(bookmarkId)?.observe(this, { bookmarkView ->
+                bookmarkView?.let { bookmarkView ->
+                    bookmarkDetailsView = bookmarkView
+                    databinding.bookmarkDetailsView = bookmarkView
+                    populateImageView()
+                }
+            }
+        )
     }
 
     private fun populateImageView() {
@@ -31,5 +50,36 @@ class BookmarkDetailsActivity : AppCompatActivity() {
                 databinding.imageViewPlace.setImageBitmap(placeImage)
             }
         }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_bookmark_details, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_save -> {
+                saveChanges()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    private fun saveChanges() {
+        val name = databinding.editTextName.text.toString()
+        if (name.isEmpty()) {
+            return
+        }
+        bookmarkDetailsView?.let { bookmarkView ->
+            bookmarkView.name = databinding.editTextName.text.toString()
+            bookmarkView.notes = databinding.editTextNotes.text.toString()
+            bookmarkView.address = databinding.editTextAddress.text.toString()
+            bookmarkView.phone = databinding.editTextPhone.text.toString()
+            bookmarkDetailsViewModel.updateBookmark(bookmarkView)
+        }
+        // Closes the activity
+        finish()
     }
 }

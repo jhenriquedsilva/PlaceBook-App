@@ -53,8 +53,8 @@
                     android:scaleType="fitCenter"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-                <!-- There was an image set over here -->
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:srcCompat="@drawable/default_photo"/>
 
                 <androidx.appcompat.widget.AppCompatTextView
                     android:id="@+id/textViewName"

@@ -31,4 +31,12 @@ class Repository(context: Context) {
         return bookmarkDao.loadLiveBookmark(bookmarkId)
     }
 
+    fun updateBookmark(bookmark: Bookmark) {
+        bookmarkDao.updateBookmark(bookmark)
+    }
+
+    fun getBookmark(bookmarkId: Long): Bookmark {
+        return bookmarkDao.loadBookmark(bookmarkId)
+    }
+
 }

@@ -9,6 +9,8 @@ import androidx.lifecycle.Transformations
 import com.raywenderlich.placebook.model.Bookmark
 import com.raywenderlich.placebook.repository.Repository
 import com.raywenderlich.placebook.util.ImageUtils
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 class BookmarkDetailsViewModel(application: Application): AndroidViewModel(application) {
 
@@ -37,6 +39,27 @@ class BookmarkDetailsViewModel(application: Application): AndroidViewModel(appli
             bookmark.address,
             bookmark.notes
         )
+    }
+
+    fun updateBookmark(bookmarkView: BookmarkDetailsView) {
+        GlobalScope.launch {
+            val bookmark = bookmarkViewToBookmark(bookmarkView)
+            bookmark?.let { bookmark -> repository.updateBookmark(bookmark) }
+        }
+    }
+
+    private fun bookmarkViewToBookmark(bookmarkView: BookmarkDetailsView): Bookmark? {
+        val bookmark = bookmarkView.id?.let { id ->
+            repository.getBookmark(id)
+        }
+        if (bookmark != null) {
+            bookmark.id = bookmarkView.id
+            bookmark.name = bookmarkView.name
+            bookmark.phone = bookmarkView.phone
+            bookmark.address = bookmarkView.address
+            bookmark.notes = bookmarkView.notes
+        }
+        return bookmark
     }
 
     data class BookmarkDetailsView(
