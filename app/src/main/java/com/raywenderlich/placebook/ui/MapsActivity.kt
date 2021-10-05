@@ -8,8 +8,10 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.viewModels
+import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.Observer
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.location.*
 
@@ -25,6 +27,7 @@ import com.google.android.libraries.places.api.net.FetchPlaceRequest
 import com.google.android.libraries.places.api.net.PlacesClient
 import com.raywenderlich.placebook.R
 import com.raywenderlich.placebook.adapter.BookmarkInfoWindowAdapter
+import com.raywenderlich.placebook.adapter.BookmarkListAdapter
 import com.raywenderlich.placebook.databinding.ActivityMapsBinding
 import com.raywenderlich.placebook.viewmodel.MapsViewModel
 import kotlinx.coroutines.GlobalScope
@@ -34,18 +37,18 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var map: GoogleMap
     private lateinit var placesClient: PlacesClient
-    private lateinit var binding: ActivityMapsBinding
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     // This creates a new mapsViewModel only the first time the activity is created
     private val mapsViewModel by viewModels<MapsViewModel>()
+    private lateinit var databinding: ActivityMapsBinding
+    private lateinit var bookmarkListAdapter: BookmarkListAdapter
     // private var locationRequest: LocationRequest? = null
 
-    //1
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        binding = ActivityMapsBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        databinding = ActivityMapsBinding.inflate(layoutInflater)
+        setContentView(databinding.root)
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
@@ -53,6 +56,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         setupLocationClient()
         setupPlacesClient()
+        setupToolBar()
+        setupNavigationDrawer()
     }
     // 3
     private fun setupLocationClient() {
@@ -65,6 +70,27 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun setupPlacesClient() {
         Places.initialize(applicationContext, getString(R.string.google_maps_key))
         placesClient = Places.createClient(this)
+    }
+
+    private fun setupToolBar() {
+        setSupportActionBar(databinding.mainMapView.toolbar)
+        // This fully manages the the display and functionality of the toggle icon
+        val toggle = ActionBarDrawerToggle(
+            this,
+            databinding.drawerLayout,
+            databinding.mainMapView.toolbar,
+            R.string.open_drawer,
+            R.string.close_drawer
+        )
+        // Ensures that the toggle is displayed initially
+        toggle.syncState()
+    }
+
+    private fun setupNavigationDrawer() {
+        val layoutManager = LinearLayoutManager(this)
+        databinding.drawerViewMaps.bookmarkRecyclerView.layoutManager = layoutManager
+        bookmarkListAdapter = BookmarkListAdapter(null, this)
+        databinding.drawerViewMaps.bookmarkRecyclerView.adapter = bookmarkListAdapter
     }
 
     /**
@@ -106,8 +132,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 marker.remove()
             }
 
-            is MapsViewModel.BookmarkMarkerView -> {
-                val bookmarkMarkerView = marker.tag as MapsViewModel.BookmarkMarkerView
+            is MapsViewModel.BookmarkView -> {
+                val bookmarkMarkerView = marker.tag as MapsViewModel.BookmarkView
                 marker.hideInfoWindow()
                 bookmarkMarkerView.id?.let { id -> startBookmarkDetails(id) }
             }
@@ -123,22 +149,23 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     // Observes changes in the database
     private fun createBookmarkObserver() {
         // Everytime the data changes in the database, this lambda is called
-        val bookmarksObserver = Observer<List<MapsViewModel.BookmarkMarkerView>> { bookmarks ->
+        val bookmarksObserver = Observer<List<MapsViewModel.BookmarkView>> { bookmarks ->
                 map.clear()
                 bookmarks?.let { bookmarks ->
                     displayAllBookmarks(bookmarks)
+                    bookmarkListAdapter.setBookmarkData(bookmarks)
                 }
         }
-        mapsViewModel.getBookmarkMarkerViews()?.observe(this, bookmarksObserver)
+        mapsViewModel.getBookmarkViews()?.observe(this, bookmarksObserver)
     }
 
     // Adds blue markers for bookmarks
-    private fun displayAllBookmarks(bookmarks: List<MapsViewModel.BookmarkMarkerView>) {
+    private fun displayAllBookmarks(bookmarks: List<MapsViewModel.BookmarkView>) {
         bookmarks.forEach { bookmark -> addPlaceMarker(bookmark) }
     }
 
     // Creates the blue marker
-    private fun addPlaceMarker(bookmark: MapsViewModel.BookmarkMarkerView): Marker? {
+    private fun addPlaceMarker(bookmark: MapsViewModel.BookmarkView): Marker? {
         val marker = map.addMarker(
                  MarkerOptions()
                 .position(bookmark.location)

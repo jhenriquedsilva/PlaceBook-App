@@ -8,4 +8,6 @@
     <string name="phone_number">Phone number</string>
     <string name="notes">Notes</string>
     <string name="enter_notes">Enter notes</string>
+    <string name="open_drawer">Open drawer</string>
+    <string name="close_drawer">Close drawer</string>
 </resources>
