@@ -14,7 +14,7 @@ import com.raywenderlich.placebook.model.Bookmark
 interface BookmarkDao {
 
     // LiveData does its work in the background
-    @Query("SELECT * FROM Bookmark")
+    @Query("SELECT * FROM Bookmark ORDER BY name")
     fun loadAll(): LiveData<List<Bookmark>>
 
     @Query("SELECT * FROM Bookmark WHERE id = :bookmarkId")

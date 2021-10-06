@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.location.Location
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -43,6 +44,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var databinding: ActivityMapsBinding
     private lateinit var bookmarkListAdapter: BookmarkListAdapter
     // private var locationRequest: LocationRequest? = null
+    private var markers = HashMap<Long, Marker>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -150,11 +152,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun createBookmarkObserver() {
         // Everytime the data changes in the database, this lambda is called
         val bookmarksObserver = Observer<List<MapsViewModel.BookmarkView>> { bookmarks ->
-                map.clear()
-                bookmarks?.let { bookmarks ->
-                    displayAllBookmarks(bookmarks)
-                    bookmarkListAdapter.setBookmarkData(bookmarks)
-                }
+            map.clear()
+            markers.clear()
+
+            bookmarks?.let { bookmarks ->
+                displayAllBookmarks(bookmarks)
+                bookmarkListAdapter.setBookmarkData(bookmarks)
+            }
         }
         mapsViewModel.getBookmarkViews()?.observe(this, bookmarksObserver)
     }
@@ -175,7 +179,26 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 .alpha(0.8f)
         )
         marker.tag = bookmark
+        // This adds a new entry to markers when a new marker is added to the map.
+        bookmark.id?.let { id -> markers.put(id, marker) }
         return marker
+    }
+
+    fun moveToBookmark(bookmark: MapsViewModel.BookmarkView) {
+        databinding.drawerLayout.closeDrawer(databinding.drawerViewMaps.drawerView)
+        val marker = markers[bookmark.id]
+        marker?.showInfoWindow()
+
+        val location = Location("")
+        location.latitude = bookmark.location.latitude
+        location.longitude = bookmark.location.longitude
+        updateMapToLocation(location)
+    }
+
+    private fun updateMapToLocation(location: Location) {
+        val latLng = LatLng(location.latitude, location.longitude)
+        // Smoothly pans the map
+        map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16.0f))
     }
 
     //3 When the app launches, get the current location and centers the map on it

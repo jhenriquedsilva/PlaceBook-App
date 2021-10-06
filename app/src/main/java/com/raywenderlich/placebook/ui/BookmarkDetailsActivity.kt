@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
@@ -12,7 +13,7 @@ import com.raywenderlich.placebook.databinding.ActivityBookmarkDetailsBinding
 import com.raywenderlich.placebook.model.Bookmark
 import com.raywenderlich.placebook.viewmodel.BookmarkDetailsViewModel
 
-class BookmarkDetailsActivity : AppCompatActivity() {
+class BookmarkDetailsActivity : AppCompatActivity(), PhotoOptionDialogFragment.PhotoOptionDialogListener {
 
     private lateinit var databinding: ActivityBookmarkDetailsBinding
     private val bookmarkDetailsViewModel by viewModels<BookmarkDetailsViewModel>()
@@ -50,6 +51,15 @@ class BookmarkDetailsActivity : AppCompatActivity() {
                 databinding.imageViewPlace.setImageBitmap(placeImage)
             }
         }
+        databinding.imageViewPlace.setOnClickListener {
+            replaceImage()
+        }
+    }
+
+    // Problem over here
+    private fun replaceImage() {
+        val newFragment = PhotoOptionDialogFragment.newInstance(this)
+        newFragment?.show(supportFragmentManager, "photoOptionDialog")
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -81,5 +91,13 @@ class BookmarkDetailsActivity : AppCompatActivity() {
         }
         // Closes the activity
         finish()
+    }
+
+    override fun onCaptureClick() {
+        Toast.makeText(this, "Camera Update", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onPickClick() {
+        Toast.makeText(this, "Gallery Pick", Toast.LENGTH_SHORT).show()
     }
 }

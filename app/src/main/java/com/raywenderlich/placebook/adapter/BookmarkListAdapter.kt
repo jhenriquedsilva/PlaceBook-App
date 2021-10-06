@@ -16,7 +16,16 @@ class BookmarkListAdapter(
     class ViewHolder(
         val binding: BookmarkItemBinding,
         private val mapsActivity: MapsActivity
-    ) : RecyclerView.ViewHolder(binding.root)
+    ) : RecyclerView.ViewHolder(binding.root) {
+
+        init {
+            // There is a click listener in every item
+            binding.root.setOnClickListener {
+                val bookmarkView = itemView.tag as MapsViewModel.BookmarkView
+                mapsActivity.moveToBookmark(bookmarkView)
+            }
+        }
+    }
 
     // 3
     fun setBookmarkData(bookmarks: List<MapsViewModel.BookmarkView>) {
