@@ -33,6 +33,7 @@ import com.raywenderlich.placebook.databinding.ActivityMapsBinding
 import com.raywenderlich.placebook.viewmodel.MapsViewModel
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import java.io.File
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 

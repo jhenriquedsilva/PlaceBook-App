@@ -70,6 +70,6 @@ class PhotoOptionDialogFragment: DialogFragment() {
             } else {
                 null
             }
-        }
+
     }
 }
