@@ -17,7 +17,8 @@ data class Bookmark(
     var latitude: Double = 0.0,
     var longitude: Double = 0.0,
     var phone: String = "",
-    var notes: String = ""
+    var notes: String = "",
+    var category: String = ""
 )
 {
 
