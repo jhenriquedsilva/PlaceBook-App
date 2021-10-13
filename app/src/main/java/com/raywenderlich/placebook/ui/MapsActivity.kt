@@ -1,6 +1,7 @@
 package com.raywenderlich.placebook.ui
 
 import android.Manifest
+import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -8,11 +9,14 @@ import android.location.Location
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException
+import com.google.android.gms.common.GooglePlayServicesRepairableException
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.location.*
 
@@ -23,9 +27,12 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
+import com.google.android.libraries.places.api.model.RectangularBounds
 import com.google.android.libraries.places.api.net.FetchPhotoRequest
 import com.google.android.libraries.places.api.net.FetchPlaceRequest
 import com.google.android.libraries.places.api.net.PlacesClient
+import com.google.android.libraries.places.widget.Autocomplete
+import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import com.raywenderlich.placebook.R
 import com.raywenderlich.placebook.adapter.BookmarkInfoWindowAdapter
 import com.raywenderlich.placebook.adapter.BookmarkListAdapter
@@ -119,7 +126,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         // Indicate that the map should use the custom InfoWindow class
         map.setInfoWindowAdapter(BookmarkInfoWindowAdapter(this))
         map.setOnPoiClickListener { pointOfInterest -> displayPoi(pointOfInterest) }
-        map.setOnInfoWindowClickListener { marker -> handleInfoWindowClick(marker)}
+        map.setOnInfoWindowClickListener { marker -> handleInfoWindowClick(marker) }
+        databinding.mainMapView.fab.setOnClickListener {
+            searchAtCurrentLocation()
+        }
     }
 
     private fun handleInfoWindowClick(marker: Marker) {
@@ -343,10 +353,65 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         marker?.showInfoWindow()
     }
 
+    private fun searchAtCurrentLocation() {
+// 1
+        val placeFields = listOf(
+            Place.Field.ID,
+            Place.Field.NAME,
+            Place.Field.PHONE_NUMBER,
+            Place.Field.PHOTO_METADATAS,
+            Place.Field.LAT_LNG,
+            Place.Field.ADDRESS,
+            Place.Field.TYPES
+        )
+
+        // 2 Computes the bounds of the currently visible region of the map
+        val bounds = RectangularBounds.newInstance(map.projection.visibleRegion.latLngBounds)
+
+        try {
+        // 3
+            val intent = Autocomplete.IntentBuilder(
+                AutocompleteActivityMode.OVERLAY, placeFields
+            )   // Look for places within the current map window before searching other places
+                .setLocationBias(bounds)
+                .build(this)
+            // 4
+            startActivityForResult(intent, AUTOCOMPLETE_REQUEST_CODE)
+
+        } catch (e: GooglePlayServicesRepairableException) {
+            Toast.makeText(this, "Problems Searching", Toast.LENGTH_LONG).show()
+
+        } catch (e: GooglePlayServicesNotAvailableException) {
+            Toast.makeText(this, "Problems Searching. Google Play Not available", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    // Called when the user completes the search
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        when (requestCode) {
+            AUTOCOMPLETE_REQUEST_CODE -> {
+                if (resultCode == Activity.RESULT_OK && data != null) {
+                    // Takes the data and returns a populated Place object
+                    val place = Autocomplete.getPlaceFromIntent(data)
+
+                    val location = Location("")
+                    location.latitude = place.latLng?.latitude ?: 0.0
+                    location.longitude = place.latLng?.longitude ?: 0.0
+                    updateMapToLocation(location)
+
+                    displayPoiGetPhotoStep(place)
+                }
+            }
+        }
+    }
+
     companion object {
         private const val REQUEST_LOCATION = 1
         private const val TAG = "MapsActivity"
         const val  EXTRA_BOOKMARK_ID = "com.raywenderlich.placebook.EXTRA_BOOKMARK_ID"
+        private const val AUTOCOMPLETE_REQUEST_CODE = 2
     }
 
     // This class is used to store data in the marker tag
