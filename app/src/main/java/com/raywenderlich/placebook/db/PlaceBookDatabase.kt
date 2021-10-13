@@ -6,7 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.raywenderlich.placebook.model.Bookmark
 
-@Database(entities = arrayOf(Bookmark::class), version = 3)
+@Database(entities = [Bookmark::class], version = 5)
 abstract class PlaceBookDatabase: RoomDatabase() {
 
     abstract fun bookmarkDao(): BookmarkDao

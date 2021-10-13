@@ -82,6 +82,7 @@ class MapsViewModel(application: Application): AndroidViewModel(application) {
         var category = "Other"
         val types = place.types
 
+        // Security is important
         types?.let { placeTypes ->
             if (placeTypes.size > 0) {
                 val placeType = placeTypes[0]

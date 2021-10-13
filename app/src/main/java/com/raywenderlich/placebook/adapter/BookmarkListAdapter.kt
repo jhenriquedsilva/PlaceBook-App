@@ -46,7 +46,9 @@ class BookmarkListAdapter(
 
             holder.binding.root.tag = bookmarkViewData
             holder.binding.bookmarkData = bookmarkViewData
-            holder.binding.bookmarkIcon.setImageResource(R.drawable.ic_location)
+            bookmarkViewData.categoryResourceId?.let { categoryResourceId ->
+                holder.binding.bookmarkIcon.setImageResource(categoryResourceId)
+            }
         }
     }
 

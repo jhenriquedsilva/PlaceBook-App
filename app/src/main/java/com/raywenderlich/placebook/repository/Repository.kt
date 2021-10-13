@@ -43,6 +43,7 @@ class Repository(context: Context) {
         return bookmarkDao.loadBookmark(bookmarkId)
     }
 
+    // If the type was defined, assign it. Otherwise, it becomes other
     fun placeTypeToCategory(placeType: Place.Type): String {
         var category = "Other"
         if (categoryMap.containsKey(placeType)) {
@@ -54,6 +55,8 @@ class Repository(context: Context) {
     fun getCategoryResourceId(placeCategory: String): Int? {
         return allCategories[placeCategory]
     }
+
+    // Category names to category resource ids
     private fun buildCategories(): HashMap<String, Int> {
         return hashMapOf(
             "Gas" to R.drawable.ic_gas,
@@ -64,6 +67,7 @@ class Repository(context: Context) {
         )
     }
 
+    // Maps place type to supported place book category
     private fun buildCategoryMap(): HashMap<Place.Type, String> {
         return hashMapOf(
             Place.Type.BAKERY to "Restaurant",
