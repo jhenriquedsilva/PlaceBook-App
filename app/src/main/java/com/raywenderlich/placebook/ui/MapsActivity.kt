@@ -354,7 +354,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun searchAtCurrentLocation() {
-// 1
+        // 1 What attributes the Autocomplete widget is going to return
         val placeFields = listOf(
             Place.Field.ID,
             Place.Field.NAME,
@@ -369,13 +369,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val bounds = RectangularBounds.newInstance(map.projection.visibleRegion.latLngBounds)
 
         try {
-        // 3
+            // 3 Autocomplete provides an intent builder method to build up the intent to launch the autocomplete activity
+            // Can overlay the current activity
             val intent = Autocomplete.IntentBuilder(
-                AutocompleteActivityMode.OVERLAY, placeFields
+                AutocompleteActivityMode.OVERLAY,
+                placeFields
             )   // Look for places within the current map window before searching other places
                 .setLocationBias(bounds)
+                // Returns the intent
                 .build(this)
-            // 4
+            // 4 When the user finishes the search, the results are identified by this request code
             startActivityForResult(intent, AUTOCOMPLETE_REQUEST_CODE)
 
         } catch (e: GooglePlayServicesRepairableException) {
@@ -386,21 +389,26 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
+    // This method is linked to the method above
     // Called when the user completes the search
+    // Data stores data in extras
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-
+        // 1 Checks if the request code is correct
         when (requestCode) {
             AUTOCOMPLETE_REQUEST_CODE -> {
+                // Result OK means operation succeeded
                 if (resultCode == Activity.RESULT_OK && data != null) {
-                    // Takes the data and returns a populated Place object
+                    // 3 Takes the data intent and returns a populated Place object
                     val place = Autocomplete.getPlaceFromIntent(data)
 
+                    // Converts the place object to a location object
                     val location = Location("")
                     location.latitude = place.latLng?.latitude ?: 0.0
                     location.longitude = place.latLng?.longitude ?: 0.0
                     updateMapToLocation(location)
 
+                    // Loads the place photo and displays the place info window
                     displayPoiGetPhotoStep(place)
                 }
             }

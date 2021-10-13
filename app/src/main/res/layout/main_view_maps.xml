@@ -9,7 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        tools:context="com.raywenderlich.placebook.ui.MapsActivity">
+        tools:context=".MapsActivity">
 
         <com.google.android.material.appbar.AppBarLayout
             android:layout_width="match_parent"
@@ -36,5 +36,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
-        app:srcCompat="@drawable/ic_search_white"/>
+        app:srcCompat="@drawable/ic_search_white"/> <!-- automatic scaling -->
+
 </FrameLayout>
