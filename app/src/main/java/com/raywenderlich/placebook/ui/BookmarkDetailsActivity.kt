@@ -9,6 +9,9 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.core.content.FileProvider
@@ -48,6 +51,7 @@ class BookmarkDetailsActivity : AppCompatActivity(), PhotoOptionDialogFragment.P
                     bookmarkDetailsView = bookmarkView
                     databinding.bookmarkDetailsView = bookmarkView
                     populateImageView()
+                    populateCategoryList()
                 }
             }
         )
@@ -65,7 +69,48 @@ class BookmarkDetailsActivity : AppCompatActivity(), PhotoOptionDialogFragment.P
         }
     }
 
-    // Problem over here
+    private fun populateCategoryList() {
+
+        val bookmarkView = bookmarkDetailsView ?: return
+
+        val resourceId = bookmarkDetailsViewModel.getCategoryResourceId(
+            bookmarkView.category
+        )
+
+        resourceId?.let { resourceId ->
+            databinding.imageViewCategory.setImageResource(resourceId)
+        }
+
+        val categories = bookmarkDetailsViewModel.getCategories()
+        val adapter = ArrayAdapter(
+            this,
+            android.R.layout.simple_spinner_item,
+            categories
+        )
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        databinding.spinnerCategory.adapter = adapter
+
+        val placeCategory = bookmarkView.category
+
+        databinding.spinnerCategory.setSelection(adapter.getPosition(placeCategory))
+
+        databinding.spinnerCategory.post {
+            databinding.spinnerCategory.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+                    val category =  parent.getItemAtPosition(position) as String
+                    val resourceId = bookmarkDetailsViewModel.getCategoryResourceId(category)
+                    resourceId?.let { resourceId ->
+                        databinding.imageViewCategory.setImageResource(resourceId)
+                    }
+                }
+
+                override fun onNothingSelected(parent: AdapterView<*>?) {
+                    //NOTE: This method is required but not used
+                }
+            }
+        }
+    }
+
     private fun replaceImage() {
         val newFragment = PhotoOptionDialogFragment.newInstance(this)
         newFragment?.show(supportFragmentManager, "photoOptionDialog")
@@ -96,6 +141,7 @@ class BookmarkDetailsActivity : AppCompatActivity(), PhotoOptionDialogFragment.P
             bookmarkView.notes = databinding.editTextNotes.text.toString()
             bookmarkView.address = databinding.editTextAddress.text.toString()
             bookmarkView.phone = databinding.editTextPhone.text.toString()
+            bookmarkView.category = databinding.spinnerCategory.selectedItem as String
             bookmarkDetailsViewModel.updateBookmark(bookmarkView)
         }
         // Closes the activity

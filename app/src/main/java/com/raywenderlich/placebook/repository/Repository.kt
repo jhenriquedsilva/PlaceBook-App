@@ -14,6 +14,8 @@ class Repository(context: Context) {
     private val bookmarkDao: BookmarkDao = db.bookmarkDao()
     private var categoryMap: HashMap<Place.Type, String> = buildCategoryMap()
     private var allCategories: HashMap<String, Int> = buildCategories()
+    val categories: List<String>
+        get() = ArrayList(allCategories.keys)
     // Gets all the bookmark from the repository
     val allBookmarks: LiveData<List<Bookmark>>
         get() {
