@@ -92,4 +92,20 @@ class MapsViewModel(application: Application): AndroidViewModel(application) {
         return category
     }
 
+    /**
+     * Feature: creates a bookmark from a place that does not show up on the map
+     * Creates a bookmark from a map location
+     * Called by newBookmark in MapsActivity
+     **/
+    fun addBookmark(latLng: LatLng) : Long? {
+        // Since there are default values, it is possible to declare less fields
+        val bookmark = repository.createBookmark()
+        bookmark.name = "Untitled"
+        bookmark.longitude = latLng.longitude
+        bookmark.latitude = latLng.latitude
+        bookmark.category = "Other"
+        // Returns the bookmark id
+        return repository.addBookmark(bookmark)
+    }
+
 }

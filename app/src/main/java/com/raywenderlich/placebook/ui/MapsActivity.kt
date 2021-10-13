@@ -130,6 +130,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         databinding.mainMapView.fab.setOnClickListener {
             searchAtCurrentLocation()
         }
+        /**
+         * Feature: creates a bookmark from a place that does not show up on the map
+         * Creates a bookmark from a map location
+         * A listener for when a view is clicked and held
+         */
+        map.setOnMapLongClickListener { latLng ->
+            newBookmark(latLng)
+        }
     }
 
     private fun handleInfoWindowClick(marker: Marker) {
@@ -411,6 +419,20 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     // Loads the place photo and displays the place info window
                     displayPoiGetPhotoStep(place)
                 }
+            }
+        }
+    }
+
+    /**
+     * Feature: creates a bookmark from a place that does not show up on the map
+     * Creates a bookmark from a map location
+     * Called in setupMapListeners()
+     */
+    private fun newBookmark(latLng: LatLng) {
+        GlobalScope.launch {
+            val bookmarkId = mapsViewModel.addBookmark(latLng)
+            bookmarkId?.let { id ->
+                startBookmarkDetails(id)
             }
         }
     }
