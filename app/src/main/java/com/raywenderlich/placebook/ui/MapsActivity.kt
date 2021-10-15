@@ -9,6 +9,8 @@ import android.location.Location
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.WindowManager
+import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.ActionBarDrawerToggle
@@ -287,6 +289,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     //1 Called when there is a tap on a point of interest on the map.
     // This call is made within onMapReady
     private fun displayPoi(pointOfInterest: PointOfInterest) {
+        showProgress()
         displayPoiGetPlaceStep(pointOfInterest)
     }
 
@@ -315,6 +318,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 if (exception is ApiException) {
                     val statusCode = exception.statusCode
                     Log.e(TAG, "Place not found: " + exception.message + ", " + "statusCode: " + statusCode)
+                    hideProgress()
                 }
             }
     }
@@ -342,12 +346,15 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 if (exception is ApiException) {
                     val statusCode = exception.statusCode
                     Log.e(TAG, "Place not found: " + exception.message + ", " + "statusCode: " + statusCode)
+                    hideProgress()
                 }
             }
     }
 
     // Add a marker when a point of interest is tapped
     private fun displayPoiDisplayStep(place: Place, photo: Bitmap?) {
+
+        hideProgress()
 
         val marker = map.addMarker(
             MarkerOptions()
@@ -414,6 +421,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     val location = Location("")
                     location.latitude = place.latLng?.latitude ?: 0.0
                     location.longitude = place.latLng?.longitude ?: 0.0
+                    showProgress()
                     updateMapToLocation(location)
 
                     // Loads the place photo and displays the place info window
@@ -435,6 +443,39 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 startBookmarkDetails(id)
             }
         }
+    }
+
+    /**
+     * Feature: showing a progress icon to the user and blocking their interaction
+     * and allowing interaction again
+     * Called by onActivityResult() and displayPoi()
+     */
+    private fun showProgress() {
+        databinding.mainMapView.progressBar.visibility = ProgressBar.VISIBLE
+        disableUserInteraction()
+    }
+
+    /**
+     * Feature: showing a progress icon to the user and blocking their interaction
+     * and allowing interaction again
+     * Called by displayPoiDisplayStep(), displayPoiGetPhotoStep(), and displayPoiGetPlaceStep()
+     */
+    private fun hideProgress() {
+        databinding.mainMapView.progressBar.visibility = ProgressBar.GONE
+        enableUserInteraction()
+    }
+
+    /**
+     * Feature: showing a progress icon to the user and blocking their interaction
+     * and allowing interaction again
+     */
+    private fun disableUserInteraction() {
+        window.setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+        WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+    }
+
+    private fun enableUserInteraction() {
+        window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
     }
 
     companion object {
