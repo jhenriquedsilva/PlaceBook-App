@@ -24,10 +24,13 @@ class BookmarkDetailsViewModel(application: Application): AndroidViewModel(appli
         return bookmarkDetailsView
     }
 
+    // Updated to conform with the deleteBookmark() feature
     private fun mapBookmarkToBookmarkView(bookmarkId: Long) {
         val bookmark = repository.getLiveBookmark(bookmarkId)
         bookmarkDetailsView = Transformations.map(bookmark) { repoBookmark ->
-            bookmarkToBookmarkView(repoBookmark)
+            repoBookmark?.let { repoBookmark ->
+                bookmarkToBookmarkView(repoBookmark)
+            }
         }
     }
 
@@ -46,6 +49,22 @@ class BookmarkDetailsViewModel(application: Application): AndroidViewModel(appli
         GlobalScope.launch {
             val bookmark = bookmarkViewToBookmark(bookmarkView)
             bookmark?.let { bookmark -> repository.updateBookmark(bookmark) }
+        }
+    }
+
+    /**
+     * Feature: deleting a bookmark
+     * Deletes a bookmark from the database
+     * Called by BookmarkDetailsActivity in deleteBookmark()
+     */
+    fun deleteBookmark(bookmarkDetailsView: BookmarkDetailsView) {
+        GlobalScope.launch {
+            val bookmark = bookmarkDetailsView.id?.let { id ->
+                repository.getBookmark(id)
+            }
+            bookmark?.let { bookmark ->
+                repository.deleteBookmark(bookmark)
+            }
         }
     }
 

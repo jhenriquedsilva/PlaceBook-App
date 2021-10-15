@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.raywenderlich.placebook.util.FileUtils
 import com.raywenderlich.placebook.util.ImageUtils
 import java.io.File
 
@@ -26,6 +27,15 @@ data class Bookmark(
 
         id?.let { id ->
             ImageUtils.saveBitmapToFile(context, image, generateImageFilename(id))
+        }
+    }
+
+    /**
+     * When a user deletes a bookmark, they need to delete the associatedd
+     */
+    fun deleteImage(context: Context) {
+        id?.let { id ->
+            FileUtils.deleteFile(context, generateImageFilename(id))
         }
     }
 

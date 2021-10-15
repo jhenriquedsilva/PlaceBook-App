@@ -14,6 +14,7 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.FileProvider
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
@@ -127,6 +128,14 @@ class BookmarkDetailsActivity : AppCompatActivity(), PhotoOptionDialogFragment.P
                 saveChanges()
                 true
             }
+            /**
+             * Feature: deleting a bookmark
+             * Deletes a bookmark from the database
+             */
+            R.id.action_delete -> {
+                deleteBookmark()
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
     }
@@ -146,6 +155,24 @@ class BookmarkDetailsActivity : AppCompatActivity(), PhotoOptionDialogFragment.P
         }
         // Closes the activity
         finish()
+    }
+
+    /**
+     * Feature: deleting a bookmark
+     * Deletes a bookmark from the database
+     * Called by onOptionsItemSelected()
+     */
+    private fun deleteBookmark() {
+        val bookmarkView = bookmarkDetailsView ?: return
+        AlertDialog.Builder(this)
+            .setMessage("Delete?")
+             // Text and a click listener
+            .setPositiveButton("Ok") { _, _ ->
+                bookmarkDetailsViewModel.deleteBookmark(bookmarkView)
+                finish()
+            }
+            .setNegativeButton("Cancel", null)
+            .create().show()
     }
 
     override fun onCaptureClick() {

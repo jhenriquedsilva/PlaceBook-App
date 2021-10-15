@@ -8,7 +8,7 @@ import com.raywenderlich.placebook.db.BookmarkDao
 import com.raywenderlich.placebook.db.PlaceBookDatabase
 import com.raywenderlich.placebook.model.Bookmark
 
-class Repository(context: Context) {
+class Repository(val context: Context) {
 
     private val db = PlaceBookDatabase.getInstance(context)
     private val bookmarkDao: BookmarkDao = db.bookmarkDao()
@@ -27,6 +27,16 @@ class Repository(context: Context) {
         val newId = bookmarkDao.insertBookmark(bookmark)
         bookmark.id = newId
         return newId
+    }
+
+    /**
+     * Feature: deleting a bookmark
+     * Deletes a bookmark from the database and the image associated with it
+     * Called by BookmarkDetailsViewModel in deleteBookmark()
+     */
+    fun deleteBookmark(bookmark: Bookmark) {
+        bookmark.deleteImage(context)
+        bookmarkDao.deleteBookmark(bookmark)
     }
 
     fun createBookmark(): Bookmark {
