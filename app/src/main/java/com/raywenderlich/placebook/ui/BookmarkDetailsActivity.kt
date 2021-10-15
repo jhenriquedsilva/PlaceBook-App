@@ -24,6 +24,7 @@ import com.raywenderlich.placebook.model.Bookmark
 import com.raywenderlich.placebook.util.ImageUtils
 import com.raywenderlich.placebook.viewmodel.BookmarkDetailsViewModel
 import java.io.File
+import java.net.URLEncoder
 
 class BookmarkDetailsActivity : AppCompatActivity(), PhotoOptionDialogFragment.PhotoOptionDialogListener {
 
@@ -37,6 +38,7 @@ class BookmarkDetailsActivity : AppCompatActivity(), PhotoOptionDialogFragment.P
         databinding = DataBindingUtil.setContentView(this, R.layout.activity_bookmark_details)
         setupToolbar()
         getIntentData()
+        setupFab()
     }
 
     private fun setupToolbar() {
@@ -155,6 +157,39 @@ class BookmarkDetailsActivity : AppCompatActivity(), PhotoOptionDialogFragment.P
         }
         // Closes the activity
         finish()
+    }
+
+    /**
+     * Feature: sharing a place
+     */
+    private fun setupFab() {
+        databinding.fab.setOnClickListener { sharePlace() }
+    }
+
+    /**
+     * Feature: sharing a place
+     */
+    private fun sharePlace() {
+        val bookmarkView = bookmarkDetailsView ?: return
+        var mapUrl = ""
+        // This doc teaches you how to build a map URL.
+        if (bookmarkView.placeId == null) {
+            val location = URLEncoder.encode("${bookmarkView.latitude}," + "${bookmarkView.longitude}", "utf-8")
+            mapUrl = "https://www.google.com/maps/dir/?api=1&destination=$location"
+        } else {
+            val name = URLEncoder.encode(bookmarkView.name, "utf-8")
+            mapUrl = "https://www.google.com/maps/dir/?api=1"+"&destination=$name&destination_place_id="+"${bookmarkView.placeId}"
+        }
+
+        val sendIntent = Intent()
+        sendIntent.action = Intent.ACTION_SEND
+
+        sendIntent.putExtra(Intent.EXTRA_TEXT, "Check out ${bookmarkView.name} at: \n$mapUrl")
+        sendIntent.putExtra(Intent.EXTRA_SUBJECT, "Sharing ${bookmarkView.name}")
+
+        sendIntent.type = "text/plain"
+
+        startActivity(sendIntent)
     }
 
     /**
